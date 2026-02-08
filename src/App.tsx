@@ -27,6 +27,7 @@ interface ShiftData {
   breaks: Break[];
   currentCycleStart: string | null;
   currentBreakStart: string | null;
+  cycleElapsedBeforeBreak: number | null; // Track elapsed time when cycle is paused for break
 }
 
 const STORAGE_KEY = 'active-shift-data';
@@ -92,7 +93,8 @@ function App() {
       cycles: [],
       breaks: [],
       currentCycleStart: null,
-      currentBreakStart: null
+      currentBreakStart: null,
+      cycleElapsedBeforeBreak: null
     };
 
     setShiftData(newShiftData);
@@ -149,18 +151,47 @@ function App() {
         duration
       };
 
-      setShiftData({
+      const updatedShiftData: ShiftData = {
         ...shiftData,
         breaks: [...shiftData.breaks, newBreak],
         currentBreakStart: null
-      });
+      };
+
+      // If cycle was paused for this break, resume it
+      if (shiftData.cycleElapsedBeforeBreak !== null) {
+        // Resume cycle by adjusting start time
+        const now = Date.now();
+        updatedShiftData.currentCycleStart = new Date(now - shiftData.cycleElapsedBeforeBreak).toISOString();
+        updatedShiftData.cycleElapsedBeforeBreak = null;
+      }
+
+      setShiftData(updatedShiftData);
       setBreakActive(false);
     } else {
       // Start break
-      setShiftData({
-        ...shiftData,
-        currentBreakStart: new Date().toISOString()
-      });
+
+      // If cycle is active, confirm and pause it
+      if (cycleActive) {
+        if (!window.confirm('Take a break? This will pause the current cycle.')) {
+          return;
+        }
+
+        // Calculate elapsed time in current cycle
+        const cycleElapsed = Date.now() - new Date(shiftData.currentCycleStart!).getTime();
+
+        setShiftData({
+          ...shiftData,
+          currentBreakStart: new Date().toISOString(),
+          cycleElapsedBeforeBreak: cycleElapsed
+        });
+      } else {
+        // No active cycle, just start break
+        setShiftData({
+          ...shiftData,
+          currentBreakStart: new Date().toISOString()
+        });
+      }
+
       setBreakActive(true);
     }
   };
@@ -412,8 +443,8 @@ function App() {
             <>
               <button
                 onClick={handleCycleStart}
-                disabled={cycleActive || breakActive}
-                style={{ ...bigBtnStyle, background: '#2196f3', opacity: (cycleActive || breakActive) ? 0.5 : 1 }}
+                disabled={cycleActive}
+                style={{ ...bigBtnStyle, background: '#2196f3', opacity: cycleActive ? 0.5 : 1 }}
               >
                 {cycleActive ? 'CYCLE RUNNING...' : 'CYCLE START'}
               </button>
@@ -452,6 +483,7 @@ function App() {
                   </div>
                   <div>
                     <strong>Status:</strong> {
+                      (cycleActive && breakActive) ? '⏸️ Cycle Paused (On Break)' :
                       cycleActive ? '🔵 Cycle Active' :
                       breakActive ? '🟡 On Break' :
                       '⚪ Idle'
