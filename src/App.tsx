@@ -510,28 +510,54 @@ function App() {
           </div>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
           {!shiftActive ? (
-            <button onClick={handleShiftStart} style={{ ...bigBtnStyle, background: '#4caf50' }}>SHIFT START</button>
+            <button onClick={handleShiftStart} style={{ ...hugeBtnStyle, background: '#4caf50' }}>SHIFT START</button>
           ) : (
             <>
-              <button onClick={handleCycleStart} disabled={cycleActive} style={{ ...bigBtnStyle, background: '#2196f3', opacity: cycleActive ? 0.5 : 1 }}>
-                {cycleActive ? 'CYCLE RUNNING...' : 'CYCLE START'}
+              {/* Huge Cycle Toggle Button */}
+              <button
+                onClick={cycleActive ? handleCycleEnd : handleCycleStart}
+                style={{
+                  ...hugeBtnStyle,
+                  background: cycleActive ? '#ff9800' : '#2196f3',
+                  minHeight: '180px'
+                }}
+              >
+                {cycleActive ? 'END CYCLE' : 'START CYCLE'}
               </button>
 
-              <button onClick={handleCycleEnd} disabled={!cycleActive} style={{ ...bigBtnStyle, background: '#ff9800', opacity: !cycleActive ? 0.5 : 1 }}>CYCLE END</button>
+              {/* Smaller Control Buttons */}
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <button
+                  onClick={handleBreakToggle}
+                  style={{
+                    ...mediumBtnStyle,
+                    background: breakActive ? '#f44336' : '#ffc107',
+                    flex: 1
+                  }}
+                >
+                  {breakActive ? 'END BREAK' : 'START BREAK'}
+                </button>
 
-              <button onClick={handleBreakToggle} style={{ ...bigBtnStyle, background: breakActive ? '#f44336' : '#ffc107' }}>
-                {breakActive ? 'BREAK END' : 'BREAK START'}
-              </button>
+                <button
+                  onClick={handleShiftEnd}
+                  disabled={cycleActive || breakActive}
+                  style={{
+                    ...mediumBtnStyle,
+                    background: '#e91e63',
+                    opacity: (cycleActive || breakActive) ? 0.5 : 1,
+                    flex: 1
+                  }}
+                >
+                  END SHIFT
+                </button>
+              </div>
 
-              <button onClick={handleShiftEnd} disabled={cycleActive || breakActive} style={{ ...bigBtnStyle, background: '#e91e63', opacity: (cycleActive || breakActive) ? 0.5 : 1 }}>SHIFT END</button>
-
-              <div style={{ background: 'rgba(255,255,255,0.9)', borderRadius: '15px', padding: '20px', marginTop: '20px' }}>
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                  <div style={{ marginBottom: '8px' }}><strong>Cycles Completed:</strong> {shiftData?.cycles.length || 0}</div>
-                  <div style={{ marginBottom: '8px' }}><strong>Breaks Taken:</strong> {shiftData?.breaks.length || 0}</div>
-                  <div><strong>Status:</strong> {(cycleActive && breakActive) ? '⏸️ Cycle Paused (On Break)' : cycleActive ? '🔵 Cycle Active' : breakActive ? '🟡 On Break' : '⚪ Idle'}</div>
+              <div style={{ background: 'rgba(255,255,255,0.9)', borderRadius: '15px', padding: '20px', marginTop: '10px' }}>
+                <div style={{ fontSize: '1rem', color: '#666' }}>
+                  <div style={{ marginBottom: '10px', fontSize: '1.1rem' }}><strong>Cycles:</strong> {shiftData?.cycles.length || 0} | <strong>Breaks:</strong> {shiftData?.breaks.length || 0}</div>
+                  <div style={{ fontSize: '1.1rem' }}><strong>Status:</strong> {(cycleActive && breakActive) ? '⏸️ Cycle Paused' : cycleActive ? '🔵 Cycle Active' : breakActive ? '🟡 On Break' : '⚪ Ready'}</div>
                 </div>
               </div>
             </>
@@ -558,18 +584,34 @@ const btnStyle: React.CSSProperties = {
   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
 };
 
-const bigBtnStyle: React.CSSProperties = {
-  padding: '25px 30px',
-  fontSize: '1.5rem',
-  fontWeight: 700,
+const mediumBtnStyle: React.CSSProperties = {
+  padding: '20px 25px',
+  fontSize: '1.2rem',
+  fontWeight: 600,
   border: 'none',
-  borderRadius: '15px',
+  borderRadius: '12px',
   cursor: 'pointer',
   color: 'white',
-  boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
-  transition: 'transform 0.1s',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
   textTransform: 'uppercase',
-  letterSpacing: '1px'
+  letterSpacing: '0.5px'
+};
+
+const hugeBtnStyle: React.CSSProperties = {
+  padding: '40px 50px',
+  fontSize: '2.5rem',
+  fontWeight: 700,
+  border: 'none',
+  borderRadius: '20px',
+  cursor: 'pointer',
+  color: 'white',
+  boxShadow: '0 8px 16px rgba(0,0,0,0.25)',
+  textTransform: 'uppercase',
+  letterSpacing: '2px',
+  minHeight: '140px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 };
 
 export default App;
